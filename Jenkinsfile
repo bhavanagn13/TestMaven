@@ -1,30 +1,43 @@
-apply plugin: 'java'
-apply plugin: 'maven'
+pipeline {
+    agent any
 
-group = 'com.example'
-version = '1.0-SNAPSHOT'
-
-description = """TestMaven"""
-
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+    tools {
+        maven 'Maven'
+    }
 
 
-
-repositories {
-        
-     maven { url "https://repo.maven.apache.org/maven2" }
-}
-dependencies {
-    testCompile group: 'junit', name: 'junit', version:'3.8.1'
-  
-
-
-jar{
-	manifest{
-		attributes(
-			'Main-Class': 'com.example.App'
-		          )
+    stages {
+		stage('Checkout'){
+			steps{
+				git branch:'main', url:'https://github.com/bhavanagn13/TestMaven.git'
+			}
 		}
-   }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('Run Application') {
+            steps {
+                sh 'java -jar target/TestMaven-1.0-SNAPSHOT.jar'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Build and deployment successful!'
+        }
+        failure {
+            echo 'Build failed!'
+        }
+    }
 }
